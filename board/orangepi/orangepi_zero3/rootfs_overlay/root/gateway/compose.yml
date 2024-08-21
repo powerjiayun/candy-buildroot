@@ -1,0 +1,29 @@
+services:
+  candy:
+    image: docker.io/lanthora/candy
+    container_name: "candy"
+    network_mode: "host"
+    privileged: true
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    restart: "always"
+    volumes:
+      - ./data/candy:/var/lib/candy
+  dae:
+    image: docker.io/daeuniverse/dae
+    container_name: "dae"
+    network_mode: "host"
+    privileged: true
+    restart: "always"
+    volumes:
+      - /sys:/sys
+      - ./config/dae:/etc/dae
+  watchtower:
+    image: containrrr/watchtower
+    container_name: "watchtower"
+    network_mode: "host"
+    privileged: true
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: candy dae watchtower --cleanup --log-level warn

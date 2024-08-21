@@ -1,0 +1,47 @@
+global {
+    lan_interface: end0
+    wan_interface: auto
+    dial_mode: domain++
+    log_level: warn
+    allow_insecure: false
+    auto_config_kernel_parameter: true
+    tcp_check_http_method: GET
+    check_tolerance: 50ms
+    disable_waiting_network: true
+}
+
+node {
+    socks5: 'socks5://192.168.202.1:1080'
+}
+
+dns {
+    ipversion_prefer: 4
+
+    upstream {
+        alidns: 'udp://dns.alidns.com:53'
+        googledns: 'tcp+udp://dns.google.com:53'
+    }
+
+    routing {
+        request {
+            qname(geosite:cn) -> alidns
+            qname(suffix: canets.org) -> alidns
+            fallback: googledns
+        }
+    }
+}
+
+group {
+    proxy {
+        policy: min
+    }
+}
+
+routing {
+    pname(NetworkManager, systemd-resolved, dnsmasq, candy, dae) -> must_direct
+    dip(224.0.0.0/3) -> direct
+    dip(geoip:private, geoip:cn) -> direct
+    domain(geosite:cn) -> direct
+
+    fallback: proxy
+}
